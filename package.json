@@ -1,0 +1,45 @@
+{
+  "name": "pd3d",
+  "version": "1.6.0",
+  "main": "./src/index.js",
+  "author": "jiajing@pdstars.com",
+  "copyright": "@ 2019 PDStars Electric Co., Ltd.",
+  "description": "三维组件库",
+  "license": "MIT",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development webpack-dev-server --config config/webpack.dev.js",
+    "build": "cross-env NODE_ENV=development webpack --config config/webpack.prod.js",
+    "release": "cross-env NODE_ENV=production webpack --config config/webpack.prod.js",
+    "test": "jest --config config/jest.js",
+    "webpack": "cross-env NODE_ENV=development node --inspect-brk ./node_modules/webpack/bin/webpack.js --config config/webpack.dev.js"
+  },
+  "dependencies": {
+    "cesium": "1.89.0",
+    "element-resize-event": "^3.0.3",
+    "svg-sprite-loader": "^5.0.0"
+  },
+  "devDependencies": {
+    "@open-wc/webpack-import-meta-loader": "^0.4.7",
+    "babel-core": "^6.26.3",
+    "babel-jest": "^24.8.0",
+    "babel-loader": "7.1.5",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-2": "^6.24.1",
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^5.0.3",
+    "cross-env": "^5.2.0",
+    "css-loader": "^3.2.1",
+    "filemanager-webpack-plugin": "^2.0.5",
+    "html-webpack-plugin": "^3.2.0",
+    "jest": "^24.8.0",
+    "style-loader": "^1.0.1",
+    "url-loader": "^3.0.0",
+    "webpack": "^4.33.0",
+    "webpack-bundle-analyzer": "^3.3.2",
+    "webpack-cli": "^3.3.2",
+    "webpack-dev-server": "^3.6.0",
+    "webpack-merge": "^4.2.1"
+  },
+  "loginfo": []
+}

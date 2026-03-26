@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=0.8, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- <script src="./js/Cesium/Cesium.js"></script> -->
+    <script src="./js/data.js"></script>
+    <style>
+        .subBlock {
+            position: relative;
+            width: 48%;
+            height: 700px;
+            float: left;
+            margin: 16px;
+        }
+
+        .container {
+            height: 90%;
+        }
+
+        .monitorView3d,
+        .detectView3d,
+        .show3d,
+        .edit3d {
+            background-color: #0d2e5a;
+        }
+
+        .title {
+            position: absolute;
+            font-size: 20px;
+            text-align: center;
+            font-weight: bold;
+            margin-left: 33%;
+            margin-top: 1rem;
+            color: rgb(255, 255, 255);
+        }
+
+        .gongnengBtn {
+            position: absolute;
+            top: 4rem;
+            left: 2rem;
+            color: rgb(255, 255, 255);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div style="position: absolute;width: 100%;height: 100%;">
+        <div class="show3d subBlock">
+            <div class="title">单模型展示--设备模型、传感器模型</div>
+            <div class="container" id="show3dContainer"></div>
+            <div class="gongnengBtn">
+                <select id='deviceNameSelect' onchange="changeSelect()">
+                    <option value="mulian">110KV母联</option>
+                    <option value="kgg">开关柜</option>
+                    <option value="UHF">特高频传感器</option>
+                    <option value="HFCT">高频传感器</option>
+                    <option value="3in1">三合一传感器</option>
+                </select>
+            </div>
+        </div>
+        <div class="edit3d subBlock" id="edit3dContainer">
+            <div class="title">模型位置编辑</div>
+        </div>
+        <div class="monitorView3d subBlock">
+            <div class="title">在线监测设备监视</div>
+            <div class="container" id="monitorView3dContainer"></div>
+        </div>
+        <div class="detectView3d subBlock">
+            <div class="title">带电检测设备监视</div>
+            <div class="container" id="detectView3dContainer"></div>
+            <div class="gongnengBtn">
+                <input id='updateIsContinuousDom' type="checkbox" onclick="updateIsContinuousClick()">支持连续点击</input>
+                <input id='allInDom' type="checkbox" onclick="allIn()">全部选择</input>
+            </div>
+        </div>
+    </div>
+    <script>
+        var params = {
+            // resourceProUrl: 'http://192.168.14.101:14212/resource/',
+            resourceProUrl: 'http://192.168.14.101:14212/',
+            deviceType: 1,
+            deviceName: '1主变',
+            statusColor: {
+                // SELECTED: [0, 0, 0, 255],
+                SERIOUS: [251, 75, 28, 255],
+                ALARM: [255, 227, 61, 255],
+                WARNING: [81, 247, 187, 255],
+            },
+            category: 1,//模型类型  1 设备模型   2 传感器模型
+            //isContinuousClick: false,//设备模型是否支持连续点击选中功能：false不支持，true支持。默认false。
+            resolutionScale: 1.0,//0.9,//默认是1.0
+        };
+        let toolBar = {
+            initpos: {
+                display: true,
+                title: 'init position',
+            },
+            rotate: {
+                display: true, //是否显示旋转按钮
+                direction: 'left', //旋转方向
+                attribute: [{ title: 'rotate' }, { title: 'stopRotate' }],
+            },
+            popup: {
+                display: true, //是否显示气泡显示按钮
+                default: false, //默认显示状态
+                style: "top:30px;left:-20px",
+                title: 'POPUP',
+            },
+            upload: {
+                display: false, //是否显示上传按钮
+                click: this.uploadClick,
+            },
+            edit: {
+                display: false, //是否显示编辑按钮
+                click: this.editClick,
+                title: 'edit',
+            }
+        };
+
+
+        var viewer0, detectViewer0, show0, edit0;
+        //调用本地测试代码开关
+        window.switchLocalTest = true;
+        window.onload = function () {
+            // show3d(0);
+            // edit3d();
+            monitorView3d();
+            // detectView3d();
+            // let time0 = window.setTimeout("edit3d()", 2000)
+            // let time1 = window.setTimeout("monitorView3d()", 4000)
+            // let time2 = window.setTimeout("detectView3d()", 8000)
+        }
+
+        //monitorView3d
+        function monitorView3d() {
+            let optsView3d = {
+                dataRes: taobo_220KV_zhubian_gis_glb,//taobo_220KV_zhubian_gis,// deviceObj,
+                params,
+                toolBar,
+            };
+            //设备展示页面--在线监测
+            viewer0 = pd3d.view3d('monitorView3dContainer', optsView3d, viewer0);
+            // pd3d.updateToolBarStyle("right: 12rem;");
+            // pd3d.refreshSensorStatusByAdu(viewer0.dataStatusUpdate, latestDataAdu, deviceObj.sensorList, ["13500166"], 2);
+            // pd3d.refreshStatus(view3d.dataStatusUpdate, deviceObj.sensorList, lastData, 1);
+            // pd3d.refreshLatestData(view3d.dataStatusUpdate, lastData);
+
+            // window.setTimeout(() => {
+            //     pd3d.refreshSensorStatusByAdu(viewer0.dataStatusUpdate, latestDataAdu001)
+            // }, 10000)
+        }
+
+        //带电检测设备监视
+        function detectView3d() {
+            let optsDetectView3d = {
+                dataRes: kaiguangui,//taobo_220KV_zhubian_gis,//
+                params,
+                toolBar: {
+                    ...toolBar,
+                    popup: {
+                        display: false,
+                    },
+                    upload: {
+                        display: false,
+                    },
+                    edit: {
+                        display: false,
+                    }
+                },
+            };
+            //设备展示页面--带电检测
+            detectViewer0 = pd3d.view3d('detectView3dContainer', optsDetectView3d, detectViewer0, 'detect');
+
+            window.addEventListener('message', (e) => {
+                if (e && e.data) {
+                    console.log('phaseNames111222111：：：' + e.data.phaseNames)
+                }
+            }, false)
+        }
+
+
+        //模型展示--设备模型、传感器模型
+        function show3d(index) {
+            if (index == 2 || index == 3 || index == 4) {
+                params.category = 2
+            } else {
+                params.category = 1
+            }
+            let optsShow3d = {
+                dataRes: deviceObjList[index],// show3dResult,//sensorObj,//
+                params,
+            };
+            show0 = pd3d.show3d('show3dContainer', optsShow3d, show0);
+        }
+
+        //模型编辑
+        function edit3d() {
+            let optsEdit3d = {
+                dataRes: deviceObj,
+                params,
+                toolBar: {
+                    operaDes: {
+                        title: 'operaDes',
+                        content: {
+                            text: '操作说明',
+                            direction: '方向'
+                        }
+                    }
+                }
+            };
+            //编辑页面
+            edit0 = pd3d.edit3d('edit3dContainer', optsEdit3d, edit0);
+            pd3d.updateToolBarStyle("right: 1rem;", 'edit3dContainer');
+        }
+
+        function uploadClick() {
+            alert(`$uploadBtn2222Click00`);
+        }
+        function editClick() {
+            alert(`$editBtn2222Click11123`);
+        }
+
+        function changeSelect() {
+
+
+        }
+        document.getElementById('deviceNameSelect').onchange = function () {
+            console.log(this.options[this.selectedIndex].value)
+            let value = this.options[this.selectedIndex].value;
+            show3d(this.selectedIndex)
+        }
+
+        // function loadModel001() {
+        //     let optsView3d11 = {
+        //         dataRes: deviceObj1,
+        //         params,
+        //         toolBar,
+        //     };
+        //     viewer0 = pd3d.view3d('monitorView3dContainer', optsView3d11, viewer0);
+        //     // pd3d.updateToolBarStyle("right: 2rem;");
+        // }
+        // function loadModel002() {
+        //     let optsView3d = {
+        //         dataRes: deviceObj,
+        //         params,
+        //         toolBar,
+        //     };
+        //     viewer0 = pd3d.view3d('monitorView3dContainer', optsView3d, viewer0);
+        //     // pd3d.updateToolBarStyle("right: 2rem;");
+        // }
+
+        function updateIsContinuousClick() {
+            var el = document.getElementById('updateIsContinuousDom')
+            console.log(el.checked)
+
+            pd3d.updateIsContinuousClick(detectViewer0, el.checked)
+        }
+
+        function allIn() {
+            var el = document.getElementById('allInDom')
+            console.log(el.checked)
+            if (el.checked) {
+                pd3d.updateEntityByPhase(detectViewer0, ['ABC'], true)//全选['A', 'B', 'C', 'noPhase']
+            } else {
+                pd3d.updateEntityByPhase(detectViewer0, [], false)// 取消全选
+            }
+        }
+
+    </script>
+</body>
+
+</html>

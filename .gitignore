@@ -1,0 +1,6 @@
+build
+node_modules
+coverage
+*.lock
+.vscode/chrome
+.DS_Store
