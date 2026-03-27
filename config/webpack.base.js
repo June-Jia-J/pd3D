@@ -15,9 +15,9 @@ const cesiumThirdParty = '../Build/Cesium/ThirdParty';
 //指定目录,合并打包
 const resolve = (relatedPath) => path.join(__dirname, relatedPath);
 
-// 接口转发配置
+// 接口转发配置（若后续在 devServer 中启用 proxy，请与此保持一致）
 const proxy = {
-    target: 'http://192.168.14.101:8081/',
+    target: 'http://localhost:8081/',
     secure: false,
     changeOrigin: true,
 };

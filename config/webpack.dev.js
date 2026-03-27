@@ -7,8 +7,8 @@ const MockerPlugin = require('../mocker');
 //指定目录,合并打包
 const resolve = (relatedPath) => path.join(__dirname, relatedPath);
 
-//网站url地址
-const host = '192.168.14.101';
+// 开发服务绑定地址（使用 localhost，避免依赖已不可达的局域网 IP）
+const host = 'localhost';
 const port = '8080';
 
 //development|production ( 生产环境会将代码压缩 )
@@ -36,6 +36,8 @@ const webpackConfigDev = {
 		port: port,
 		compress: true,
 		publicPath: '/',
+		// 使 ./public/data/... 等相对路径在开发环境下可访问（与 index.html 中 resourceProUrl 为空时配合）
+		contentBase: resolve('..'),
 		historyApiFallback: {
 			disableDotRule: true,
 		},

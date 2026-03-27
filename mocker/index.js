@@ -51,6 +51,10 @@ module.exports = class MockerPlugin {
                 filePath = path.join(options.buildPath, options.filename);
             }
             let content = await mergeData();
+            const outDir = path.dirname(filePath);
+            if (!fs.existsSync(outDir)) {
+                fs.mkdirSync(outDir, { recursive: true });
+            }
             fs.writeFile(filePath, new Uint8Array(Buffer.from(content)), (err) => {
                 if (err) throw err;
                 console.log('Mocker data has been merged!');

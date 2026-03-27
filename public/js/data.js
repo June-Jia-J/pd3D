@@ -107,6 +107,28 @@ var sensorObj = {
 }
 var deviceObjList = [
     {
+        "id": 10,
+        "value": 'ZBYQ01',
+        "url": [
+                {
+                    "id": "135001",
+                    "url": "./public/data/models/ZBYQ01/taoci-A.gltf"
+                }, {
+                    "id": "135001",
+                    "url": "./public/data/models/ZBYQ01/taoci-B.gltf"
+                }, {
+                    "id": "135001",
+                    "url": "./public/data/models/ZBYQ01/taoci-C.gltf"
+                }, {
+                    "id": "135001",
+                    "url": "./public/data/models/ZBYQ01/taoci-E.gltf"
+                }, {
+                    "id": "135002",
+                    "url": "./public/data/models/ZBYQ01/up.gltf"
+                }
+        ],
+    },
+    {
         "id": 1111,
         "value": 'mulian',
         // "desOri": '{"heading":5.899267600885238,"picth":-0.29738108763269455,"alt":623.5623688752476,"roll":5.419498201320039e-7,"lon":0.004891967942944236,"lat":-0.011840259735968037}',

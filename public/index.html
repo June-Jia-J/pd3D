@@ -10,8 +10,8 @@
     <style>
         .subBlock {
             position: relative;
-            width: 48%;
-            height: 700px;
+            width: 100%;
+            height: 100%;
             float: left;
             margin: 16px;
         }
@@ -50,19 +50,20 @@
 
     <div style="position: absolute;width: 100%;height: 100%;">
         <div class="show3d subBlock">
-            <div class="title">单模型展示--设备模型、传感器模型</div>
+            <div class="title">单模型展示</div>
             <div class="container" id="show3dContainer"></div>
             <div class="gongnengBtn">
                 <select id='deviceNameSelect' onchange="changeSelect()">
-                    <option value="mulian">110KV母联</option>
+                    <option value="ZBYQ01">主变</option>
+                    <!-- <option value="mulian">110KV母联</option>
                     <option value="kgg">开关柜</option>
                     <option value="UHF">特高频传感器</option>
                     <option value="HFCT">高频传感器</option>
-                    <option value="3in1">三合一传感器</option>
+                    <option value="3in1">三合一传感器</option> -->
                 </select>
             </div>
         </div>
-        <div class="edit3d subBlock" id="edit3dContainer">
+        <!-- <div class="edit3d subBlock" id="edit3dContainer">
             <div class="title">模型位置编辑</div>
         </div>
         <div class="monitorView3d subBlock">
@@ -76,12 +77,12 @@
                 <input id='updateIsContinuousDom' type="checkbox" onclick="updateIsContinuousClick()">支持连续点击</input>
                 <input id='allInDom' type="checkbox" onclick="allIn()">全部选择</input>
             </div>
-        </div>
+        </div> -->
     </div>
     <script>
         var params = {
-            // resourceProUrl: 'http://192.168.14.101:14212/resource/',
-            resourceProUrl: 'http://192.168.14.101:14212/',
+            // 本地开发：空字符串 + data.js 中 ./public/data/... 由 webpack-dev-server contentBase 提供；远程资源可改为 http://host:port/
+            resourceProUrl: '',
             deviceType: 1,
             deviceName: '1主变',
             statusColor: {
@@ -126,9 +127,9 @@
         //调用本地测试代码开关
         window.switchLocalTest = true;
         window.onload = function () {
-            // show3d(0);
+            show3d(0);
             // edit3d();
-            monitorView3d();
+            // monitorView3d();
             // detectView3d();
             // let time0 = window.setTimeout("edit3d()", 2000)
             // let time1 = window.setTimeout("monitorView3d()", 4000)
