@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=0.8, maximum-scale=1, user-scalable=no" name="viewport">
+    <title>pd3d 可视化与交互增强演示</title>
+    <script src="./js/Cesium/Cesium.js"></script>
+    <script src="./js/pd3d.js"></script>
+    <script src="./js/data.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #0a1929;
+            color: #fff;
+            overflow: hidden;
+        }
+        
+        .demo-container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        .scene-area {
+            flex: 1;
+            position: relative;
+            background: linear-gradient(135deg, #0d2e5a 0%, #0a1929 100%);
+        }
+        
+        #cesiumContainer {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .control-sidebar {
+            width: 380px;
+            background: rgba(13, 46, 90, 0.98);
+            border-left: 1px solid rgba(64, 169, 255, 0.2);
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .demo-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 380px;
+            padding: 16px 24px;
+            background: linear-gradient(90deg, rgba(13, 46, 90, 0.95), transparent);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .demo-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .demo-subtitle {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 4px;
+        }
+        
+        .section {
+            margin-bottom: 24px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            padding: 14px 16px;
+            background: rgba(24, 144, 255, 0.15);
+            border-bottom: 1px solid rgba(64, 169, 255, 0.1);
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-content {
+            padding: 16px;
+        }
+        
+        .control-group {
+            margin-bottom: 16px;
+        }
+        
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .control-label {
+            display: block;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 8px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-primary {
+            background: #1890ff;
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            background: #40a9ff;
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .btn-success {
+            background: #52c41a;
+            color: #fff;
+        }
+        
+        .btn-warning {
+            background: #faad14;
+            color: #fff;
+        }
+        
+        .btn-danger {
+            background: #f5222d;
+            color: #fff;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .input {
+            flex: 1;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(64, 169, 255, 0.3);
+            border-radius: 4px;
+            color: #fff;
+            font-size: 13px;
+        }
+        
+        .input:focus {
+            outline: none;
+            border-color: #1890ff;
+        }
+        
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #1890ff;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .slider-value {
+            min-width: 40px;
+            text-align: right;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .bookmark-list {
+            max-height: 120px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .bookmark-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            margin-bottom: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+        
+        .bookmark-item:hover {
+            background: rgba(24, 144, 255, 0.2);
+        }
+        
+        .bookmark-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .bookmark-delete {
+            color: #f5222d;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 3px;
+            transition: background 0.2s;
+        }
+        
+        .bookmark-delete:hover {
+            background: rgba(245, 34, 45, 0.2);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        
+        .status-selected { background: #1890ff; }
+        .status-alarm { background: #f5222d; }
+        .status-warning { background: #faad14; }
+        .status-offline { background: #76797d; }
+        
+        .phase-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .phase-a { background: #ffeb3b; color: #333; }
+        .phase-b { background: #4caf50; color: #fff; }
+        .phase-c { background: #f44336; color: #fff; }
+        
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            max-width: 300px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        
+        .toggle-switch input {
+            display: none;
+        }
+        
+        .toggle-slider {
+            width: 40px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            position: relative;
+            transition: background 0.3s;
+        }
+        
+        .toggle-slider::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+        
+        .toggle-switch input:checked + .toggle-slider {
+            background: #1890ff;
+        }
+        
+        .toggle-switch input:checked + .toggle-slider::after {
+            transform: translateX(20px);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+        }
+        
+        .model-selector {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+            background: rgba(13, 46, 90, 0.95);
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(64, 169, 255, 0.2);
+        }
+        
+        .model-selector select {
+            padding: 6px 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(64, 169, 255, 0.3);
+            border-radius: 4px;
+            color: #fff;
+            font-size: 13px;
+            min-width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <!-- 场景区域 -->
+        <div class="scene-area">
+            <div class="demo-header">
+                <div>
+                    <div class="demo-title">🔧 pd3d 可视化与交互增强演示</div>
+                    <div class="demo-subtitle">相机视角 · 材质状态 · 场景光影</div>
+                </div>
+            </div>
+            
+            <div id="cesiumContainer"></div>
+            
+            <!-- 模型选择器 -->
+            <div class="model-selector">
+                <select id="modelSelect">
+                    <option value="ZBYQ01">主变设备模型</option>
+                </select>
+            </div>
+            
+            <!-- 信息面板 -->
+            <div class="info-panel">
+                <div class="info-item">
+                    <span>当前视角:</span>
+                    <span id="currentView">默认视角</span>
+                </div>
+                <div class="info-item">
+                    <span>选中模型:</span>
+                    <span id="selectedModel">无</span>
+                </div>
+                <div class="info-item">
+                    <span>PBR支持:</span>
+                    <span id="pbrSupport">-</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 控制侧边栏 -->
+        <div class="control-sidebar">
+            <!-- 相机与视角 -->
+            <div class="section">
+                <div class="section-header">
+                    📷 相机与视角
+                </div>
+                <div class="section-content">
+                    <!-- 视角书签 -->
+                    <div class="control-group">
+                        <label class="control-label">视角书签</label>
+                        <div class="bookmark-list" id="bookmarkList">
+                            <div class="empty-state">暂无书签，点击保存添加</div>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" class="input" id="bookmarkName" placeholder="输入书签名称">
+                            <button class="btn btn-primary" onclick="saveBookmark()">保存</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 快速视角 -->
+                    <div class="control-group">
+                        <label class="control-label">快速视角</label>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="restoreDefaultView()">🏠 默认</button>
+                            <button class="btn btn-secondary" onclick="toggleOrbit()" id="orbitBtn">🔄 环绕</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 边界限制 -->
+                    <div class="control-group">
+                        <label class="control-label">边界限制</label>
+                        <div class="slider-group">
+                            <span style="font-size: 11px; width: 60px;">最小视距</span>
+                            <input type="range" class="slider" id="minZoom" min="5" max="100" value="20" oninput="updateMinZoom(this.value)">
+                            <span class="slider-value" id="minZoomValue">20m</span>
+                        </div>
+                        <div class="slider-group" style="margin-top: 8px;">
+                            <span style="font-size: 11px; width: 60px;">最大视距</span>
+                            <input type="range" class="slider" id="maxZoom" min="1000" max="10000" value="5000" oninput="updateMaxZoom(this.value)">
+                            <span class="slider-value" id="maxZoomValue">5000m</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 材质与状态 -->
+            <div class="section">
+                <div class="section-header">
+                    🎨 材质与状态
+                </div>
+                <div class="section-content">
+                    <!-- 状态高亮 -->
+                    <div class="control-group">
+                        <label class="control-label">状态高亮</label>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="setStatus('selected')">
+                                <span class="status-badge status-selected"></span>选中
+                            </button>
+                            <button class="btn btn-secondary" onclick="setStatus('alarm')">
+                                <span class="status-badge status-alarm"></span>告警
+                            </button>
+                            <button class="btn btn-secondary" onclick="setStatus('warning')">
+                                <span class="status-badge status-warning"></span>警告
+                            </button>
+                            <button class="btn btn-secondary" onclick="setStatus('offline')">
+                                <span class="status-badge status-offline"></span>离线
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 相别高亮 -->
+                    <div class="control-group">
+                        <label class="control-label">相别高亮</label>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="setPhase('A')">
+                                <span class="phase-badge phase-a">A</span> A相
+                            </button>
+                            <button class="btn btn-secondary" onclick="setPhase('B')">
+                                <span class="phase-badge phase-b">B</span> B相
+                            </button>
+                            <button class="btn btn-secondary" onclick="setPhase('C')">
+                                <span class="phase-badge phase-c">C</span> C相
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- PBR 参数 -->
+                    <div class="control-group">
+                        <label class="control-label">
+                            PBR 材质参数
+                            <span id="pbrStatus" style="color: #52c41a; font-size: 11px;"></span>
+                        </label>
+                        <div class="slider-group">
+                            <span style="font-size: 11px; width: 50px;">金属度</span>
+                            <input type="range" class="slider" id="metallic" min="0" max="100" value="50" oninput="updateMetallic(this.value)">
+                            <span class="slider-value" id="metallicValue">0.5</span>
+                        </div>
+                        <div class="slider-group" style="margin-top: 8px;">
+                            <span style="font-size: 11px; width: 50px;">粗糙度</span>
+                            <input type="range" class="slider" id="roughness" min="0" max="100" value="50" oninput="updateRoughness(this.value)">
+                            <span class="slider-value" id="roughnessValue">0.5</span>
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="clearHighlight()">清除高亮</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 场景光影 -->
+            <div class="section">
+                <div class="section-header">
+                    💡 场景光影
+                </div>
+                <div class="section-content">
+                    <!-- 灯光开关 -->
+                    <div class="control-group">
+                        <label class="control-label">灯光控制</label>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked onchange="toggleDirectional(this.checked)">
+                                <span class="toggle-slider"></span>
+                                <span>主方向光</span>
+                            </label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked onchange="toggleAmbient(this.checked)">
+                                <span class="toggle-slider"></span>
+                                <span>环境光</span>
+                            </label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" onchange="toggleShadows(this.checked)">
+                                <span class="toggle-slider"></span>
+                                <span>阴影 (性能消耗)</span>
+                            </label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" onchange="toggleHDR(this.checked)">
+                                <span class="toggle-slider"></span>
+                                <span>HDR</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- 灯光强度 -->
+                    <div class="control-group">
+                        <label class="control-label">灯光强度</label>
+                        <div class="slider-group">
+                            <span style="font-size: 11px; width: 50px;">方向光</span>
+                            <input type="range" class="slider" id="dirIntensity" min="0" max="200" value="100" oninput="updateDirIntensity(this.value)">
+                            <span class="slider-value" id="dirIntensityValue">1.0</span>
+                        </div>
+                        <div class="slider-group" style="margin-top: 8px;">
+                            <span style="font-size: 11px; width: 50px;">环境光</span>
+                            <input type="range" class="slider" id="ambIntensity" min="0" max="100" value="40" oninput="updateAmbIntensity(this.value)">
+                            <span class="slider-value" id="ambIntensityValue">0.4</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 背景设置 -->
+                    <div class="control-group">
+                        <label class="control-label">背景设置</label>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="setTransparentBg()">透明</button>
+                            <button class="btn btn-secondary" onclick="setDarkBg()">深色</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let viewer = null;
+        let cameraSystem = null;
+        let materialSystem = null;
+        let lightingSystem = null;
+        let selectedModel = null;
+        let isOrbiting = false;
+        
+        // 初始化
+        window.onload = function() {
+            initScene();
+        };
+        
+        // 初始化场景
+        function initScene() {
+            // 创建 Cesium Viewer
+            viewer = new Cesium.Viewer('cesiumContainer', {
+                animation: false,
+                baseLayerPicker: false,
+                fullscreenButton: false,
+                vrButton: false,
+                geocoder: false,
+                homeButton: false,
+                infoBox: false,
+                sceneModePicker: false,
+                selectionIndicator: true,
+                timeline: false,
+                navigationHelpButton: false,
+                scene3DOnly: true,
+                contextOptions: {
+                    webgl: {
+                        alpha: true,
+                        preserveDrawingBuffer: true,
+                    },
+                },
+            });
+            
+            // 设置舞台模式
+            const scene = viewer.scene;
+            scene.backgroundColor = Cesium.Color.TRANSPARENT;
+            scene.globe.show = false;
+            scene.globe.baseColor = Cesium.Color.TRANSPARENT;
+            scene.skyBox.show = false;
+            scene.sun.show = false;
+            scene.moon.show = false;
+            scene.skyAtmosphere.show = false;
+            
+            // 去除版权信息
+            viewer._cesiumWidget._creditContainer.style.display = 'none';
+            
+            // 初始化三大系统
+            cameraSystem = new pd3d.CameraSystem(viewer, {
+                minimumZoomDistance: 20,
+                maximumZoomDistance: 5000,
+                defaultFlyDuration: 1.5
+            });
+            
+            materialSystem = new pd3d.MaterialSystem(viewer, {
+                enablePBR: true,
+                highlightIntensity: 0.3
+            });
+            
+            lightingSystem = new pd3d.LightingSystem(viewer, {
+                stageMode: true,
+                transparentBackground: true,
+                directionalLight: {
+                    enabled: true,
+                    intensity: 1.0
+                },
+                ambientLight: {
+                    enabled: true,
+                    intensity: 0.4
+                },
+                shadows: {
+                    enabled: false
+                }
+            });
+            
+            // 加载模型
+            loadModel();
+            
+            // 设置模型点击事件
+            setupModelSelection();
+            
+            // 保存默认视角
+            setTimeout(() => {
+                cameraSystem.saveBookmark('default', { type: 'system' });
+                updateBookmarkList();
+            }, 1000);
+        }
+        
+        // 加载模型
+        function loadModel() {
+            const modelUrl = './data/models/ZBYQ01/center-A.gltf';
+            
+            const position = Cesium.Cartesian3.fromDegrees(0, 0, 0);
+            const hpr = new Cesium.HeadingPitchRoll(0, 0, 0);
+            const orientation = Cesium.Transforms.headingPitchRollQuaternion(position, hpr);
+            
+            const model = viewer.scene.primitives.add(Cesium.Model.fromGltf({
+                id: 'device_model',
+                url: modelUrl,
+                modelMatrix: Cesium.Transforms.headingPitchRollToFixedFrame(position, hpr),
+                scale: 80,
+                incrementallyLoadTextures: false,
+                colorBlendMode: Cesium.ColorBlendMode.HIGHLIGHT,
+                colorBlendAmount: 0
+            }));
+            
+            model.readyPromise.then(() => {
+                console.log('模型加载完成');
+                selectedModel = model;
+                updateModelInfo();
+            });
+        }
+        
+        // 设置模型选择
+        function setupModelSelection() {
+            const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+            
+            handler.setInputAction((click) => {
+                const pickedObject = viewer.scene.pick(click.position);
+                if (pickedObject && pickedObject.primitive) {
+                    selectedModel = pickedObject.primitive;
+                    updateModelInfo();
+                }
+            }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+        }
+        
+        // 更新模型信息
+        function updateModelInfo() {
+            const modelName = selectedModel ? (selectedModel.id || '未知模型') : '无';
+            document.getElementById('selectedModel').textContent = modelName;
+            
+            if (selectedModel) {
+                const pbrSupported = materialSystem.isPBRSupported(selectedModel);
+                document.getElementById('pbrSupport').textContent = pbrSupported ? '是' : '否';
+                document.getElementById('pbrStatus').textContent = pbrSupported ? '(支持)' : '(不支持)';
+                document.getElementById('pbrStatus').style.color = pbrSupported ? '#52c41a' : '#faad14';
+            } else {
+                document.getElementById('pbrSupport').textContent = '-';
+                document.getElementById('pbrStatus').textContent = '';
+            }
+        }
+        
+        // ========== 相机控制函数 ==========
+        
+        function saveBookmark() {
+            const name = document.getElementById('bookmarkName').value.trim();
+            if (!name) {
+                alert('请输入书签名称');
+                return;
+            }
+            
+            cameraSystem.saveBookmark(name, { type: 'user' });
+            document.getElementById('bookmarkName').value = '';
+            updateBookmarkList();
+        }
+        
+        function updateBookmarkList() {
+            const list = document.getElementById('bookmarkList');
+            const bookmarks = cameraSystem.getBookmarks();
+            
+            if (bookmarks.length === 0) {
+                list.innerHTML = '<div class="empty-state">暂无书签，点击保存添加</div>';
+                return;
+            }
+            
+            list.innerHTML = bookmarks.map(bm => `
+                <div class="bookmark-item" onclick="loadBookmark('${bm.name}')">
+                    <span>${bm.name}</span>
+                    <span class="bookmark-delete" onclick="event.stopPropagation(); deleteBookmark('${bm.name}')">×</span>
+                </div>
+            `).join('');
+        }
+        
+        function loadBookmark(name) {
+            cameraSystem.loadBookmark(name);
+            document.getElementById('currentView').textContent = name;
+        }
+        
+        function deleteBookmark(name) {
+            if (confirm(`确定删除书签 "${name}" 吗？`)) {
+                cameraSystem.deleteBookmark(name);
+                updateBookmarkList();
+            }
+        }
+        
+        function restoreDefaultView() {
+            cameraSystem.restoreDefaultView({ duration: 1.5 });
+            document.getElementById('currentView').textContent = '默认视角';
+        }
+        
+        function toggleOrbit() {
+            const btn = document.getElementById('orbitBtn');
+            
+            if (isOrbiting) {
+                cameraSystem.stopOrbit();
+                btn.textContent = '🔄 环绕';
+                isOrbiting = false;
+            } else {
+                const center = { longitude: 0, latitude: 0, height: 0 };
+                cameraSystem.startOrbit(center, {
+                    radius: 150,
+                    speed: 0.003,
+                    onStop: () => {
+                        btn.textContent = '🔄 环绕';
+                        isOrbiting = false;
+                    }
+                });
+                btn.textContent = '⏹ 停止';
+                isOrbiting = true;
+            }
+        }
+        
+        function updateMinZoom(value) {
+            document.getElementById('minZoomValue').textContent = value + 'm';
+            cameraSystem.setCameraBounds({ minimumZoomDistance: parseInt(value) });
+        }
+        
+        function updateMaxZoom(value) {
+            document.getElementById('maxZoomValue').textContent = value + 'm';
+            cameraSystem.setCameraBounds({ maximumZoomDistance: parseInt(value) });
+        }
+        
+        // ========== 材质控制函数 ==========
+        
+        function setStatus(status) {
+            if (!selectedModel) {
+                alert('请先选择一个模型');
+                return;
+            }
+            
+            if (status === 'selected') {
+                materialSystem.setSelectedHighlight(selectedModel);
+            } else {
+                materialSystem.setAlarmHighlight(selectedModel, status);
+            }
+        }
+        
+        function setPhase(phase) {
+            if (!selectedModel) {
+                alert('请先选择一个模型');
+                return;
+            }
+            
+            materialSystem.setPhaseHighlight(selectedModel, phase);
+        }
+        
+        function updateMetallic(value) {
+            document.getElementById('metallicValue').textContent = (value / 100).toFixed(1);
+            if (selectedModel) {
+                materialSystem.adjustPBRParams(selectedModel, { metallic: value / 100 });
+            }
+        }
+        
+        function updateRoughness(value) {
+            document.getElementById('roughnessValue').textContent = (value / 100).toFixed(1);
+            if (selectedModel) {
+                materialSystem.adjustPBRParams(selectedModel, { roughness: value / 100 });
+            }
+        }
+        
+        function clearHighlight() {
+            if (selectedModel) {
+                materialSystem.clearHighlight(selectedModel, selectedModel.id);
+            }
+        }
+        
+        // ========== 光影控制函数 ==========
+        
+        function toggleDirectional(enabled) {
+            lightingSystem.setDirectionalLight({ enabled });
+        }
+        
+        function toggleAmbient(enabled) {
+            lightingSystem.setAmbientLight({ enabled });
+        }
+        
+        function toggleShadows(enabled) {
+            lightingSystem.setShadows(enabled);
+        }
+        
+        function toggleHDR(enabled) {
+            lightingSystem.setHDR(enabled);
+        }
+        
+        function updateDirIntensity(value) {
+            document.getElementById('dirIntensityValue').textContent = (value / 100).toFixed(1);
+            lightingSystem.setDirectionalLight({ intensity: value / 100 });
+        }
+        
+        function updateAmbIntensity(value) {
+            document.getElementById('ambIntensityValue').textContent = (value / 100).toFixed(1);
+            lightingSystem.setAmbientLight({ intensity: value / 100 });
+        }
+        
+        function setTransparentBg() {
+            lightingSystem.setTransparentBackground(true);
+        }
+        
+        function setDarkBg() {
+            lightingSystem.setTransparentBackground(false, {
+                backgroundColor: new Cesium.Color(0.05, 0.18, 0.35, 1.0)
+            });
+        }
+    </script>
+</body>
+</html>

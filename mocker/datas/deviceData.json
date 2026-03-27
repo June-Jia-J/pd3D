@@ -1,0 +1,11 @@
+{
+  "deviceName": "1主变",
+  "deviceType": 1,
+  "deviceUrl": [
+    {
+      "id": "center-A",
+      "url": "/data/models/ZBYQ01/center-A.gltf"
+    }
+  ],
+  "sensorList": []
+}

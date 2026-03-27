@@ -84,3 +84,11 @@ export const headingPitchRollToFixedFrame = (origin, headingPitchRoll, ellipsoid
 export const cartographicFromCartesian = (cartesian, ellipsoid, result) => {
     return Cesium.Cartographic.fromCartesian(cartesian, ellipsoid, result)
 }
+
+// 缓动函数
+export const EASING_FUNCTION_SINUSOIDAL_IN_OUT = Cesium.EasingFunction.SINUSOIDAL_IN_OUT
+
+// 颜色混合模式
+export const COLOR_BLEND_MODE_MIX = Cesium.ColorBlendMode.MIX
+export const COLOR_BLEND_MODE_REPLACE = Cesium.ColorBlendMode.REPLACE
+export const COLOR_BLEND_MODE_HIGHLIGHT = Cesium.ColorBlendMode.HIGHLIGHT
