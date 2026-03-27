@@ -38,9 +38,42 @@ const webpackConfigBase = {
         extensions: ['.js', 'jsx', '.json'],
         modules: [resolve('../node_modules')],
         alias: {
-            cesium: resolve('../node_modules/cesium/Source')
+            cesium: resolve('../node_modules/cesium/Source'),
+            'readable-stream': resolve('../node_modules/readable-stream'),
+            'stream': resolve('../node_modules/stream-browserify'),
+            'zlib': resolve('../node_modules/browserify-zlib'),
+            'util': resolve('../node_modules/util'),
+            'url': resolve('../node_modules/url'),
+            'http': resolve('../node_modules/stream-http'),
+            'https': resolve('../node_modules/https-browserify'),
+            'string_decoder': resolve('../node_modules/string_decoder'),
+            'inherits': resolve('../node_modules/inherits'),
+            'events': resolve('../node_modules/events'),
+            'process': resolve('../node_modules/process'),
+            'buffer': resolve('../node_modules/buffer')
         },
         mainFiles: ['index', 'Cesium']
+    },
+
+    // 完整Node.js polyfill配置（用于Cesium源码）
+    node: {
+        console: false,
+        fs: 'empty',
+        net: 'empty',
+        tls: 'empty',
+        child_process: 'empty',
+        stream: true,
+        crypto: 'empty',
+        os: 'empty',
+        zlib: true,
+        http: true,
+        https: true,
+        process: true,
+        util: true,
+        url: true,
+        string_decoder: true,
+        Buffer: true,
+        setImmediate: false
     },
 
     amd: {
@@ -66,6 +99,9 @@ const webpackConfigBase = {
         new webpack.DefinePlugin({
             // Define relative base path in cesium for loading assets
             CESIUM_BASE_URL: JSON.stringify('../')
+        }),
+        new webpack.ProvidePlugin({
+            Buffer: ['buffer', 'Buffer']
         }),
     ],
     module: {
