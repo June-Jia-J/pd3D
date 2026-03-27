@@ -1,6 +1,5 @@
-import * as Cesium from 'cesium/Cesium'
+import * as Cesium from 'cesium'
 window.Cesium = Cesium
-console.log(Cesium)
 
 export const IDENTITY = Cesium.Matrix4.IDENTITY
 
@@ -10,13 +9,17 @@ export const CESIUM_MATH = Cesium.Math
 
 export const COLOR_TRANSPARENT = Cesium.Color.TRANSPARENT
 
-export const SHODOW_MODE_RECEIVE_ONLY = Cesium.ShadowMode.RECEIVE_ONLY
-
 export const SHODOW_MODE_DISABLED = Cesium.ShadowMode.DISABLED
+export const SHODOW_MODE_ENABLED = Cesium.ShadowMode.ENABLED
+export const SHODOW_MODE_RECEIVE_ONLY = Cesium.ShadowMode.RECEIVE_ONLY
+export const SHADOW_MODE_CAST_ONLY = Cesium.ShadowMode.CAST_ONLY
 
 export const EASING_FUNCTION_SINUSOIDAL_IN = Cesium.EasingFunction.SINUSOIDAL_IN
 
 export const EASING_FUNCTION_LINEAR_NONE = Cesium.EasingFunction.LINEAR_NONE
+export const EASING_FUNCTION_SINUSOIDAL_IN_OUT = Cesium.EasingFunction.SINUSOIDAL_IN_OUT
+export const EASING_FUNCTION_QUADRACTIC_IN_OUT = Cesium.EasingFunction.QUADRACTIC_IN_OUT
+export const EASING_FUNCTION_CUBIC_IN_OUT = Cesium.EasingFunction.CUBIC_IN_OUT
 
 
 //获取颜色值FromBytes

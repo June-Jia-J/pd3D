@@ -9,7 +9,7 @@ const resolve = (relatedPath) => path.join(__dirname, relatedPath);
 
 // 开发服务绑定地址（使用 localhost，避免依赖已不可达的局域网 IP）
 const host = 'localhost';
-const port = '8080';
+const port = '8081';
 
 //development|production ( 生产环境会将代码压缩 )
 const webpackConfigDev = {

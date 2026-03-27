@@ -1,10 +1,11 @@
-import * as Cesium from 'cesium/Cesium'
+import * as Cesium from 'cesium'
 window.Cesium = Cesium
 console.log(Cesium)
 import View3dController from './containers/view3dController';
 import Edit3dController from './containers/edit3dController';
 import Show3dController from './containers/show3dController';
 import DetectView3dController from './containers/detectView3dController';
+import { createEnhancements, enhanceController, createDemoToolbar, HIGHLIGHT_TYPES, SCENE_MODES } from './enhancements/integration';
 
 /* 加载一次设备模型（+传感器模型），完成模型可视化展示
 *   elementId：加载的dom元素
@@ -108,6 +109,11 @@ let updateEntityByPhase = (detectViewer0, phaseArr, flag) => {
     }
 }
 
+// 增强现有控制器
+let enhanceView3dController = (controller, config = {}) => {
+    return enhanceController(controller, config);
+};
+
 export {
     view3d,
     refreshStatus,
@@ -118,4 +124,9 @@ export {
     show3d,
     updateIsContinuousClick,
     updateEntityByPhase,
+    createEnhancements,
+    enhanceView3dController,
+    createDemoToolbar,
+    HIGHLIGHT_TYPES,
+    SCENE_MODES,
 };

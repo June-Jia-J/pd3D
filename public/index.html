@@ -43,6 +43,65 @@
             left: 2rem;
             color: rgb(255, 255, 255);
         }
+
+        .enhancement-controls {
+            position: absolute;
+            top: 6rem;
+            right: 2rem;
+            background: rgba(20, 30, 50, 0.9);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(100, 150, 255, 0.3);
+            color: white;
+            min-width: 280px;
+            font-size: 12px;
+        }
+
+        .enhancement-controls h4 {
+            margin: 0 0 12px 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(100, 150, 255, 0.3);
+            color: #64b5f6;
+        }
+
+        .enhancement-controls .control-group {
+            margin-bottom: 12px;
+        }
+
+        .enhancement-controls label {
+            display: inline-block;
+            width: 70px;
+            margin-right: 8px;
+            color: #b3e5fc;
+        }
+
+        .enhancement-controls select {
+            padding: 4px 8px;
+            background: rgba(30, 50, 80, 0.8);
+            border: 1px solid rgba(100, 150, 255, 0.4);
+            border-radius: 4px;
+            color: white;
+            font-size: 12px;
+            margin-right: 4px;
+        }
+
+        .enhancement-controls button {
+            padding: 4px 12px;
+            background: linear-gradient(135deg, #1976d2, #42a5f5);
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            margin-right: 4px;
+            margin-bottom: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .enhancement-controls button:hover {
+            background: linear-gradient(135deg, #1565c0, #1e88e5);
+            transform: translateY(-1px);
+        }
     </style>
 </head>
 
@@ -50,7 +109,7 @@
 
     <div style="position: absolute;width: 100%;height: 100%;">
         <div class="show3d subBlock">
-            <div class="title">单模型展示</div>
+            <div class="title">Pd3D 可视化增强演示</div>
             <div class="container" id="show3dContainer"></div>
             <div class="gongnengBtn">
                 <select id='deviceNameSelect' onchange="changeSelect()">
@@ -61,6 +120,45 @@
                     <option value="HFCT">高频传感器</option>
                     <option value="3in1">三合一传感器</option> -->
                 </select>
+            </div>
+            <!-- 增强功能控制面板 -->
+            <div class="enhancement-controls">
+                <h4>可视化增强</h4>
+                <div class="control-group">
+                    <label>视角预设:</label>
+                    <select id="viewPresetSelect">
+                        <option value="">选择视角...</option>
+                        <option value="monitor.patrol">巡视视角</option>
+                        <option value="monitor.detail">细节观察</option>
+                        <option value="monitor.top">俯视图</option>
+                        <option value="monitor.front">主视图</option>
+                    </select>
+                    <button onclick="applyViewPreset()">应用</button>
+                </div>
+                <div class="control-group">
+                    <label>高亮效果:</label>
+                    <select id="highlightType">
+                        <option value="selected">选中高亮</option>
+                        <option value="alarm">告警高亮</option>
+                        <option value="warning">警告高亮</option>
+                    </select>
+                    <button onclick="applyHighlight()">应用到模型</button>
+                    <button onclick="clearHighlights()">清除高亮</button>
+                </div>
+                <div class="control-group">
+                    <label>场景模式:</label>
+                    <select id="sceneMode">
+                        <option value="local_stage">局部舞台</option>
+                        <option value="global">全局模式</option>
+                    </select>
+                    <button onclick="changeSceneMode()">切换</button>
+                </div>
+                <div class="control-group">
+                    <label>光照与阴影:</label>
+                    <button onclick="toggleEnhancementPanel()">显示控制面板</button>
+                    <button onclick="togglePerformanceMode()">性能模式</button>
+                    <button onclick="toggleQualityMode()">画质模式</button>
+                </div>
             </div>
         </div>
         <!-- <div class="edit3d subBlock" id="edit3dContainer">
@@ -123,7 +221,7 @@
         };
 
 
-        var viewer0, detectViewer0, show0, edit0;
+        var viewer0, detectViewer0, show0, edit0, enhancements;
         //调用本地测试代码开关
         window.switchLocalTest = true;
         window.onload = function () {
@@ -134,6 +232,136 @@
             // let time0 = window.setTimeout("edit3d()", 2000)
             // let time1 = window.setTimeout("monitorView3d()", 4000)
             // let time2 = window.setTimeout("detectView3d()", 8000)
+        }
+
+        // 增强功能初始化
+        function initEnhancements() {
+            if (show0 && show0.viewer && !enhancements) {
+                enhancements = pd3d.createEnhancements(show0.viewer);
+                console.log('Enhancements initialized:', enhancements);
+                
+                // 添加底部快捷工具栏
+                const container = document.getElementById('show3dContainer');
+                pd3d.createDemoToolbar(container, enhancements);
+            }
+        }
+
+        // 应用视角预设
+        function applyViewPreset() {
+            const select = document.getElementById('viewPresetSelect');
+            const value = select.value;
+            if (value && enhancements) {
+                const [scene, preset] = value.split('.');
+                enhancements.applyViewPreset(scene, preset);
+            } else if (!enhancements) {
+                alert('请先等待增强功能初始化完成');
+            }
+        }
+
+        // 应用高亮效果
+        function applyHighlight() {
+            if (!enhancements) {
+                initEnhancements();
+                setTimeout(() => applyHighlight(), 500);
+                return;
+            }
+            
+            const select = document.getElementById('highlightType');
+            const type = select.value;
+            
+            // 获取模型
+            const viewer = show0.viewer;
+            const primitives = viewer.scene.primitives;
+            let modelFound = false;
+            
+            // 遍历primitives查找模型
+            for (let i = 0; i < primitives.length; i++) {
+                const primitive = primitives.get(i);
+                if (primitive && primitive._categories && primitive._categories.length > 0) {
+                    // 这是一个模型
+                    enhancements.material.highlightModel(primitive, type);
+                    modelFound = true;
+                    console.log('Highlight applied to model:', primitive);
+                }
+            }
+            
+            if (!modelFound) {
+                // 尝试从entities获取模型
+                const entities = viewer.entities.values;
+                for (let i = 0; i < entities.length; i++) {
+                    const entity = entities[i];
+                    if (entity.model) {
+                        enhancements.material.highlightModel(entity, type);
+                        modelFound = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (!modelFound) {
+                alert('未找到可高亮的模型');
+            }
+        }
+
+        // 清除高亮
+        function clearHighlights() {
+            if (enhancements) {
+                enhancements.material.clearAllHighlights();
+            }
+        }
+
+        // 切换场景模式
+        function changeSceneMode() {
+            if (!enhancements) {
+                initEnhancements();
+                setTimeout(() => changeSceneMode(), 500);
+                return;
+            }
+            
+            const select = document.getElementById('sceneMode');
+            const mode = select.value;
+            enhancements.setSceneMode(mode);
+        }
+
+        // 切换增强控制面板显示
+        function toggleEnhancementPanel() {
+            if (!enhancements) {
+                initEnhancements();
+                setTimeout(() => toggleEnhancementPanel(), 500);
+                return;
+            }
+            
+            const panel = enhancements._controlPanel;
+            if (panel && panel.panelElement) {
+                const isVisible = panel.panelElement.style.display !== 'none';
+                if (isVisible) {
+                    panel.hide();
+                } else {
+                    panel.show();
+                }
+            } else {
+                enhancements.showControlPanel();
+            }
+        }
+
+        // 切换性能模式
+        function togglePerformanceMode() {
+            if (!enhancements) {
+                initEnhancements();
+                setTimeout(() => togglePerformanceMode(), 500);
+                return;
+            }
+            enhancements.applyPerformanceMode();
+        }
+
+        // 切换画质模式
+        function toggleQualityMode() {
+            if (!enhancements) {
+                initEnhancements();
+                setTimeout(() => toggleQualityMode(), 500);
+                return;
+            }
+            enhancements.applyQualityMode();
         }
 
         //monitorView3d
@@ -196,6 +424,12 @@
                 params,
             };
             show0 = pd3d.show3d('show3dContainer', optsShow3d, show0);
+            
+            // 模型加载后初始化增强功能（诊断模式：暂时禁用以验证是否是增强模块导致问题）
+            console.log('模型加载完成，增强模块初始化已暂时禁用用于诊断');
+            // setTimeout(() => {
+            //     initEnhancements();
+            // }, 1000);
         }
 
         //模型编辑
