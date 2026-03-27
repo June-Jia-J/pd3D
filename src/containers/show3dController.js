@@ -4,7 +4,10 @@ import { flyToPosition5, getCurSceneLon, setCameraPosition } from '../utils/view
 import { IDENTITY } from '../utils/cesiumUtils'
 import Toolbar from '../modules/toolbar';
 import Spinner from '../modules/spinner';
-import { DEFULT_VALUE, INIT_LOAD } from '../constants';
+import { DEFULT_VALUE, INIT_LOAD, ENHANCEMENT_DEFAULTS } from '../constants';
+import CameraManager from '../modules/camera';
+import MaterialManager from '../modules/material';
+import LightManager from '../modules/light';
 import '../style.css';
 
 //工具栏默认设置
@@ -29,7 +32,11 @@ class Show3dController {
         this.toolBar = {};
         this.viewer = {};
         this.scenePosition = {};
-        this.pageType = 'show3d'
+        this.pageType = 'show3d';
+        this.enhancementConfig = deepMerge(ENHANCEMENT_DEFAULTS, data.enhancement || {});
+        this.cameraManager = null;
+        this.materialManager = null;
+        this.lightManager = null;
     }
 
     init(viewer0) {
@@ -101,6 +108,10 @@ class Show3dController {
                 scene.camera.lookAtTransform(IDENTITY);
                 this.scenePosition = getCurSceneLon(scene);
                 setCameraPosition(posCamera, viewer);
+                
+                if (this.cameraManager && this.scenePosition) {
+                    this.cameraManager.setDefaultPosition(this.scenePosition);
+                }
             }, 1000);
 
             //工具栏实例化
@@ -113,8 +124,69 @@ class Show3dController {
             viewer.resolutionScale = params.resolutionScale ? params.resolutionScale : INIT_LOAD.resolutionScale;//默认值为1.0;
             this.initposListener(scene);
             this.saveScenePosObjListener(viewer, scene, dataRes, entityArr, posCamera);
+            
+            this._initEnhancementModules(viewer, entityArr, params);
         }
         return this;
+    }
+    
+    _initEnhancementModules(viewer, entityArr, params) {
+        if (this.enhancementConfig.camera.enableBookmarks || this.enhancementConfig.camera.enableOrbit) {
+            this.cameraManager = new CameraManager(viewer, {
+                cameraConfig: this.enhancementConfig.camera,
+            });
+            
+            if (this.enhancementConfig.camera.enableBookmarks && this.data.viewPresets) {
+                this.cameraManager.setScenePresets(this.data.viewPresets);
+            }
+        }
+        
+        if (this.enhancementConfig.material.enablePBR || this.enhancementConfig.material.enablePhaseHighlight) {
+            this.materialManager = new MaterialManager(viewer, {
+                stateColors: this.enhancementConfig.material.stateColors,
+                phaseColors: this.enhancementConfig.material.phaseColors,
+            });
+        }
+        
+        if (this.enhancementConfig.light.enabled) {
+            this.lightManager = new LightManager(viewer, {
+                lightConfig: this.enhancementConfig.light,
+            });
+            
+            if (this.data.lightPreset) {
+                this.lightManager.applyPreset(this.data.lightPreset);
+            }
+        }
+    }
+    
+    getCameraManager() {
+        return this.cameraManager;
+    }
+    
+    getMaterialManager() {
+        return this.materialManager;
+    }
+    
+    getLightManager() {
+        return this.lightManager;
+    }
+    
+    flyToView(longitude, latitude, height, options = {}) {
+        if (this.cameraManager) {
+            return this.cameraManager.flyTo(longitude, latitude, height, options);
+        }
+    }
+    
+    flyToBookmark(bookmarkId) {
+        if (this.cameraManager) {
+            return this.cameraManager.flyToBookmark(bookmarkId);
+        }
+    }
+    
+    applyLightPreset(presetName) {
+        if (this.lightManager) {
+            return this.lightManager.applyPreset(presetName);
+        }
     }
 
     //工具栏实例化
@@ -170,6 +242,19 @@ class Show3dController {
         }
         this.toolBar = {};
         this.scenePosition = {};
+        
+        if (this.cameraManager) {
+            this.cameraManager.destroy();
+            this.cameraManager = null;
+        }
+        if (this.materialManager) {
+            this.materialManager.destroy();
+            this.materialManager = null;
+        }
+        if (this.lightManager) {
+            this.lightManager.destroy();
+            this.lightManager = null;
+        }
     }
 }
 export default Show3dController;

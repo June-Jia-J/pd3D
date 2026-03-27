@@ -5,25 +5,20 @@ const webpack = require('webpack');
 const pkg = require('../package.json');
 
 const release = process.env.NODE_ENV == 'production'
-// The path to the CesiumJS source code
 const cesiumSource = './node_modules/cesium/Source';
 const cesiumWorkers = '../Build/Cesium/Workers';
 const cesiumAssets = '../Build/Cesium/Assets';
 const cesiumWidgets = '../Build/Cesium/Widgets';
 const cesiumThirdParty = '../Build/Cesium/ThirdParty';
 
-//指定目录,合并打包
 const resolve = (relatedPath) => path.join(__dirname, relatedPath);
 
-// 接口转发配置（若后续在 devServer 中启用 proxy，请与此保持一致）
 const proxy = {
     target: 'http://localhost:8081/',
     secure: false,
     changeOrigin: true,
 };
 
-//向外暴露一个配置对象，commonjs规范（因为webpack是基于node构建）
-//在webpack4中有一大特性是约定大于配置，默认打包入口路径是'src/index.js'，打包输出路径是'build/main.js'
 const webpackConfigBase = {
     entry: {
         pd3d: pkg.main
@@ -33,7 +28,6 @@ const webpackConfigBase = {
         libraryTarget: "umd",
         sourcePrefix: ''
     },
-    // 指定库目录，减少webpack寻找时间
     resolve: {
         extensions: ['.js', 'jsx', '.json'],
         modules: [resolve('../node_modules')],
@@ -41,6 +35,15 @@ const webpackConfigBase = {
             cesium: resolve('../node_modules/cesium/Source')
         },
         mainFiles: ['index', 'Cesium']
+    },
+    node: {
+        fs: 'empty',
+        Buffer: false,
+        http: 'empty',
+        https: 'empty',
+        zlib: 'empty',
+        stream: 'empty',
+        crypto: 'empty',
     },
 
     amd: {

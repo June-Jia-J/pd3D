@@ -43,6 +43,28 @@
             left: 2rem;
             color: rgb(255, 255, 255);
         }
+        .enhancementDemoBtn {
+            position: absolute;
+            top: 4rem;
+            right: 2rem;
+            z-index: 1001;
+        }
+        .enhancementDemoBtn button {
+            padding: 8px 16px;
+            background: rgba(24, 144, 255, 0.9);
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        .enhancementDemoBtn button:hover {
+            background: rgba(24, 144, 255, 1);
+        }
+        .enhancementDemoBtn button.active {
+            background: rgba(82, 196, 26, 0.9);
+        }
     </style>
 </head>
 
@@ -61,6 +83,11 @@
                     <option value="HFCT">高频传感器</option>
                     <option value="3in1">三合一传感器</option> -->
                 </select>
+            </div>
+            <div class="enhancementDemoBtn">
+                <button id="toggleEnhancementPanel" onclick="toggleEnhancementPanel()">增强功能面板</button>
+                <button onclick="demoCameraFeatures()">相机演示</button>
+                <button onclick="demoLightFeatures()">光照演示</button>
             </div>
         </div>
         <!-- <div class="edit3d subBlock" id="edit3dContainer">
@@ -269,6 +296,70 @@
             } else {
                 pd3d.updateEntityByPhase(detectViewer0, [], false)// 取消全选
             }
+        }
+
+        var enhancementPanel = null;
+        
+        function toggleEnhancementPanel() {
+            var btn = document.getElementById('toggleEnhancementPanel');
+            if (!enhancementPanel) {
+                enhancementPanel = new pd3d.EnhancementPanel(show0);
+                enhancementPanel.appendTo('show3dContainer');
+                btn.classList.add('active');
+                btn.textContent = '关闭面板';
+            } else {
+                enhancementPanel.toggle();
+                if (enhancementPanel.panelEl.style.display === 'none') {
+                    btn.classList.remove('active');
+                    btn.textContent = '增强功能面板';
+                } else {
+                    btn.classList.add('active');
+                    btn.textContent = '关闭面板';
+                }
+            }
+        }
+        
+        function demoCameraFeatures() {
+            var cameraManager = show0.getCameraManager();
+            if (!cameraManager) {
+                alert('请先加载模型');
+                return;
+            }
+            
+            var presets = ['patrol', 'detail', 'top', 'front'];
+            var index = 0;
+            
+            function flyToNext() {
+                if (index < presets.length) {
+                    cameraManager.flyToBookmark(presets[index]);
+                    index++;
+                    setTimeout(flyToNext, 2000);
+                }
+            }
+            
+            flyToNext();
+        }
+        
+        function demoLightFeatures() {
+            var lightManager = show0.getLightManager();
+            if (!lightManager) {
+                alert('请先加载模型');
+                return;
+            }
+            
+            var presets = ['day', 'evening', 'night', 'indoor', 'inspection'];
+            var index = 0;
+            
+            function applyNext() {
+                if (index < presets.length) {
+                    lightManager.applyPreset(presets[index]);
+                    console.log('应用光照预设: ' + presets[index]);
+                    index++;
+                    setTimeout(applyNext, 2000);
+                }
+            }
+            
+            applyNext();
         }
 
     </script>
