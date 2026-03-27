@@ -4,7 +4,10 @@ import { flyToPosition5, setCameraPosition } from '../utils/view';
 import { handlerIsContinuousClick, getPhaseByName } from '../utils/detect';
 import Toolbar from '../modules/toolbar';
 import Spinner from '../modules/spinner';
-import { DEFULT_VALUE, INIT_LOAD } from '../constants';
+import CameraManager from '../modules/camera';
+import MaterialManager from '../modules/material';
+import LightManager from '../modules/light';
+import { DEFULT_VALUE, INIT_LOAD, ENHANCEMENT_DEFAULTS, CAMERA_CONFIG, LIGHT_CONFIG } from '../constants';
 import '../style.css';
 import UpdateEntity from '../modules/updateEntity';
 
@@ -31,6 +34,11 @@ class DetectView3dController {
         this.updateEntity = {}
         this.handler = {}
         this.pageType = 'view3d_detect'
+        
+        this.enhancementConfig = deepMerge(ENHANCEMENT_DEFAULTS, data.enhancement || {});
+        this.cameraManager = null;
+        this.materialManager = null;
+        this.lightManager = null;
     }
 
     init(viewer0) {
@@ -127,6 +135,90 @@ class DetectView3dController {
             this.handleUpdateIsContinuousClick = this.updateIsContinuousClick
             //更新数据状态
             this.updateEntity = new UpdateEntity(viewer, deviceEntityArr)
+            
+            this._initEnhancementModules(viewer, scenePosition, deviceEntityArr, params);
+        }
+        return this;
+    }
+
+    _initEnhancementModules(viewer, scenePosition, deviceEntityArr, params) {
+        if (this.enhancementConfig.camera.enableBookmarks || this.enhancementConfig.camera.enableOrbit) {
+            this.cameraManager = new CameraManager(viewer, {
+                cameraConfig: CAMERA_CONFIG,
+            });
+            
+            if (scenePosition) {
+                this.cameraManager.setDefaultPosition(scenePosition);
+            }
+            
+            if (this.enhancementConfig.camera.enableBookmarks && this.data.viewPresets) {
+                this.cameraManager.setScenePresets(this.data.viewPresets);
+            }
+        }
+        
+        if (this.enhancementConfig.material.enablePBR || this.enhancementConfig.material.enablePhaseHighlight) {
+            this.materialManager = new MaterialManager(viewer, {
+                stateColors: params.statusColor ? {
+                    WARNING: params.statusColor.WARNING,
+                    ALARM: params.statusColor.ALARM,
+                } : undefined,
+            });
+        }
+        
+        if (this.enhancementConfig.light.enableDirectional || this.enhancementConfig.light.enableAmbient) {
+            this.lightManager = new LightManager(viewer, {
+                lightConfig: deepMerge(LIGHT_CONFIG, this.data.lightConfig || {}),
+            });
+            
+            if (this.data.lightPreset) {
+                this.lightManager.applyPreset(this.data.lightPreset);
+            }
+        }
+    }
+
+    getCameraManager() {
+        return this.cameraManager;
+    }
+
+    getMaterialManager() {
+        return this.materialManager;
+    }
+
+    getLightManager() {
+        return this.lightManager;
+    }
+
+    flyToView(options) {
+        if (this.cameraManager) {
+            return this.cameraManager.flyTo(options);
+        }
+        return this;
+    }
+
+    flyToBookmark(name) {
+        if (this.cameraManager) {
+            return this.cameraManager.flyToBookmark(name);
+        }
+        return this;
+    }
+
+    saveViewBookmark(name, options) {
+        if (this.cameraManager) {
+            return this.cameraManager.saveBookmark(name, options);
+        }
+        return null;
+    }
+
+    setLightPreset(presetName) {
+        if (this.lightManager) {
+            return this.lightManager.applyPreset(presetName);
+        }
+        return this;
+    }
+
+    toggleShadows() {
+        if (this.lightManager) {
+            return this.lightManager.toggleShadows();
         }
         return this;
     }
@@ -204,6 +296,19 @@ class DetectView3dController {
             viewer.handler.removeInputAction(Cesium.ScreenSpaceEventType.RIGHT_CLICK)
             viewer.handler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK)
             viewer.handler = {}
+        }
+        
+        if (this.cameraManager) {
+            this.cameraManager.destroy();
+            this.cameraManager = null;
+        }
+        if (this.materialManager) {
+            this.materialManager.destroy();
+            this.materialManager = null;
+        }
+        if (this.lightManager) {
+            this.lightManager.destroy();
+            this.lightManager = null;
         }
     }
 }

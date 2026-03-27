@@ -84,3 +84,126 @@ export const headingPitchRollToFixedFrame = (origin, headingPitchRoll, ellipsoid
 export const cartographicFromCartesian = (cartesian, ellipsoid, result) => {
     return Cesium.Cartographic.fromCartesian(cartesian, ellipsoid, result)
 }
+
+export const boundingSphereFromPoints = (positions) => {
+    return Cesium.BoundingSphere.fromPoints(positions)
+}
+
+export const boundingSphereFromRectangle = (rectangle, ellipsoid) => {
+    return Cesium.BoundingSphere.fromRectangle2D(rectangle, ellipsoid)
+}
+
+export const rectangleFromDegrees = (west, south, east, north, result) => {
+    return Cesium.Rectangle.fromDegrees(west, south, east, north, result)
+}
+
+export const createHeadingPitchRange = (heading, pitch, range) => {
+    return new Cesium.HeadingPitchRange(heading, pitch, range)
+}
+
+export const createCartographicArray = (coordinates) => {
+    return Cesium.CartographicArray.fromDegrees(coordinates)
+}
+
+export const sampleTerrain = (terrainProvider, level, positions) => {
+    return Cesium.sampleTerrain(terrainProvider, level, positions)
+}
+
+export const createRay = (origin, direction) => {
+    return new Cesium.Ray(origin, direction)
+}
+
+export const pickRay = (camera, windowPosition, result) => {
+    return camera.pickRay(windowPosition, result)
+}
+
+export const pickEllipsoid = (camera, windowPosition, ellipsoid, result) => {
+    return camera.pickEllipsoid(windowPosition, ellipsoid, result)
+}
+
+export const computeViewRectangle = (camera, scene, result) => {
+    return camera.computeViewRectangle(scene.globe.ellipsoid, result)
+}
+
+export const distanceToBoundingSphere = (camera, boundingSphere) => {
+    return Cesium.Cartesian3.distance(camera.position, boundingSphere.center) - boundingSphere.radius
+}
+
+export const setView = (camera, options) => {
+    return camera.setView(options)
+}
+
+export const worldToScreenCoordinates = (scene, position, result) => {
+    return Cesium.SceneTransforms.wgs84ToWindowCoordinates(scene, position, result)
+}
+
+export const screenToWorldCoordinates = (camera, windowPosition, result) => {
+    const ray = camera.getPickRay(windowPosition, result)
+    return camera.pickEllipsoid(windowPosition, camera._scene.globe.ellipsoid, result)
+}
+
+export const createDirectionalLight = (options) => {
+    return new Cesium.SunLight(options)
+}
+
+export const createPointLight = (options) => {
+    return new Cesium.PointLight(options)
+}
+
+export const createSpotLight = (options) => {
+    return new Cesium.SpotLight(options)
+}
+
+export const easeIn = (t) => {
+    return t * t
+}
+
+export const easeOut = (t) => {
+    return t * (2 - t)
+}
+
+export const easeInOut = (t) => {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+}
+
+export const cubicInOut = (t) => {
+    return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1
+}
+
+export const elasticOut = (t) => {
+    const p = 0.3
+    return Math.pow(2, -10 * t) * Math.sin((t - p / 4) * (2 * Math.PI) / p) + 1
+}
+
+export const backInOut = (t) => {
+    const s = 1.70158 * 1.525
+    if ((t *= 2) < 1) {
+        return 0.5 * (t * t * ((s + 1) * t - s))
+    }
+    return 0.5 * ((t -= 2) * t * ((s + 1) * t + s) + 2)
+}
+
+export const createEasingFunction = (type = 'cubicInOut') => {
+    const easingFunctions = {
+        linear: (t) => t,
+        easeIn,
+        easeOut,
+        easeInOut,
+        cubicInOut,
+        elasticOut,
+        backInOut,
+    }
+    return easingFunctions[type] || cubicInOut
+}
+
+export const createCallbackProperty = (callback, isConstant) => {
+    return new Cesium.CallbackProperty(callback, isConstant)
+}
+
+export const createTimeIntervalCollection = (intervals) => {
+    return new Cesium.TimeIntervalCollection(intervals)
+}
+
+export const createTimeInterval = (options) => {
+    return new Cesium.TimeInterval(options)
+}

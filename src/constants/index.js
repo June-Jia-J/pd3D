@@ -90,4 +90,108 @@ export const DEFULT_VALUE = {
     },
 }
 
+export const CAMERA_CONFIG = {
+    minimumZoomDistance: 20,
+    maximumZoomDistance: 5000,
+    minimumPitch: -Math.PI / 2,
+    maximumPitch: 0,
+    nearClip: 1.0,
+    farClip: 50000000.0,
+    defaultFlyDuration: 1.5,
+}
+
+export const VIEW_PRESETS = {
+    PATROL: {
+        name: '巡视视角',
+        nameEn: 'Patrol View',
+        description: '适合整体巡视观察',
+        distance: 800,
+        pitch: -45,
+    },
+    DETAIL: {
+        name: '细节观察',
+        nameEn: 'Detail View',
+        description: '适合近距离观察细节',
+        distance: 200,
+        pitch: -30,
+    },
+    TOP: {
+        name: '俯视视角',
+        nameEn: 'Top View',
+        description: '从上方俯视场景',
+        distance: 500,
+        pitch: -89,
+    },
+    FRONT: {
+        name: '正视视角',
+        nameEn: 'Front View',
+        description: '从正面观察场景',
+        distance: 300,
+        pitch: -15,
+    },
+}
+
+export const COLOR_BLEND_MODE = {
+    HIGHLIGHT: 0,
+    REPLACE: 1,
+    MIX: 2,
+}
+
+export const MATERIAL_CONFIG = {
+    colorBlendMode: COLOR_BLEND_MODE.MIX,
+    colorBlendAmount: 0.5,
+    highlightBlendAmount: 0.5,
+    alarmBlendAmount: 0.7,
+    selectedBlendAmount: 0.5,
+}
+
+export const LIGHT_CONFIG = {
+    enabled: true,
+    directional: {
+        enabled: true,
+        color: { r: 1, g: 1, b: 1 },
+        intensity: 1.0,
+        direction: { x: 0.5, y: 0.5, z: -1 },
+    },
+    ambient: {
+        enabled: true,
+        color: { r: 0.4, g: 0.4, b: 0.4 },
+        intensity: 0.5,
+    },
+    shadow: {
+        enabled: false,
+        darkness: 0.3,
+        softShadows: true,
+        size: 2048,
+    },
+}
+
+export const PHASE_COLORS = {
+    A: cesiumColorFromBytes(255, 77, 79, 255),
+    B: cesiumColorFromBytes(82, 196, 26, 255),
+    C: cesiumColorFromBytes(22, 119, 255, 255),
+    N: cesiumColorFromBytes(140, 140, 140, 255),
+    default: cesiumColorFromBytes(24, 144, 255, 255),
+}
+
+export const ENHANCEMENT_DEFAULTS = {
+    camera: {
+        enableBookmarks: true,
+        enableOrbit: true,
+        enableBounds: true,
+        maxBookmarks: 20,
+    },
+    material: {
+        enablePBR: true,
+        enablePhaseHighlight: true,
+        enableNodeHighlight: false,
+    },
+    light: {
+        enableDirectional: true,
+        enableAmbient: true,
+        enableShadows: false,
+        enablePresets: true,
+    },
+}
+
 

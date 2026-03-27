@@ -6,7 +6,10 @@ import Toolbar from '../modules/toolbar';
 import Popup from '../modules/popup';
 import UpdateDataStatus from '../modules/updateDataStatus';
 import Spinner from '../modules/spinner';
-import { DEFULT_VALUE, INIT_LOAD } from '../constants';
+import CameraManager from '../modules/camera';
+import MaterialManager from '../modules/material';
+import LightManager from '../modules/light';
+import { DEFULT_VALUE, INIT_LOAD, ENHANCEMENT_DEFAULTS, CAMERA_CONFIG, LIGHT_CONFIG } from '../constants';
 import '../style.css';
 
 //工具栏默认设置
@@ -42,6 +45,11 @@ class View3dController {
         this.viewer = {};
         this.oldColorList = [];
         this.pageType = 'view3d_monitor'
+        
+        this.enhancementConfig = deepMerge(ENHANCEMENT_DEFAULTS, data.enhancement || {});
+        this.cameraManager = null;
+        this.materialManager = null;
+        this.lightManager = null;
     }
 
     init(viewer0) {
@@ -181,6 +189,104 @@ class View3dController {
             viewer.scene.postRender.addEventListener(function () {
                 _self.popUp.updatePopUpPosition();
             });
+            
+            this._initEnhancementModules(viewer, scenePosition, deviceEntityArr, sensorEntityArr, params);
+        }
+        return this;
+    }
+
+    _initEnhancementModules(viewer, scenePosition, deviceEntityArr, sensorEntityArr, params) {
+        if (this.enhancementConfig.camera.enableBookmarks || this.enhancementConfig.camera.enableOrbit) {
+            this.cameraManager = new CameraManager(viewer, {
+                cameraConfig: CAMERA_CONFIG,
+            });
+            
+            if (scenePosition) {
+                this.cameraManager.setDefaultPosition(scenePosition);
+            }
+            
+            if (this.enhancementConfig.camera.enableBookmarks && this.data.viewPresets) {
+                this.cameraManager.setScenePresets(this.data.viewPresets);
+            }
+        }
+        
+        if (this.enhancementConfig.material.enablePBR || this.enhancementConfig.material.enablePhaseHighlight) {
+            this.materialManager = new MaterialManager(viewer, {
+                stateColors: params.statusColor ? {
+                    WARNING: params.statusColor.WARNING,
+                    ALARM: params.statusColor.ALARM,
+                } : undefined,
+            });
+        }
+        
+        if (this.enhancementConfig.light.enableDirectional || this.enhancementConfig.light.enableAmbient) {
+            this.lightManager = new LightManager(viewer, {
+                lightConfig: deepMerge(LIGHT_CONFIG, this.data.lightConfig || {}),
+            });
+            
+            if (this.data.lightPreset) {
+                this.lightManager.applyPreset(this.data.lightPreset);
+            }
+        }
+    }
+
+    getCameraManager() {
+        return this.cameraManager;
+    }
+
+    getMaterialManager() {
+        return this.materialManager;
+    }
+
+    getLightManager() {
+        return this.lightManager;
+    }
+
+    flyToView(options) {
+        if (this.cameraManager) {
+            return this.cameraManager.flyTo(options);
+        }
+        return this;
+    }
+
+    flyToBookmark(name) {
+        if (this.cameraManager) {
+            return this.cameraManager.flyToBookmark(name);
+        }
+        return this;
+    }
+
+    saveViewBookmark(name, options) {
+        if (this.cameraManager) {
+            return this.cameraManager.saveBookmark(name, options);
+        }
+        return null;
+    }
+
+    setModelState(model, state, options) {
+        if (this.materialManager) {
+            return this.materialManager.setModelState(model, state, options);
+        }
+        return this;
+    }
+
+    setPhaseHighlight(model, phase, options) {
+        if (this.materialManager) {
+            return this.materialManager.setPhaseHighlight(model, phase, options);
+        }
+        return this;
+    }
+
+    setLightPreset(presetName) {
+        if (this.lightManager) {
+            return this.lightManager.applyPreset(presetName);
+        }
+        return this;
+    }
+
+    toggleShadows() {
+        if (this.lightManager) {
+            return this.lightManager.toggleShadows();
         }
         return this;
     }
@@ -381,6 +487,19 @@ class View3dController {
         this.toolBar = {};
         this.popUp = {};
         this.dataStatusUpdate = {};
+        
+        if (this.cameraManager) {
+            this.cameraManager.destroy();
+            this.cameraManager = null;
+        }
+        if (this.materialManager) {
+            this.materialManager.destroy();
+            this.materialManager = null;
+        }
+        if (this.lightManager) {
+            this.lightManager.destroy();
+            this.lightManager = null;
+        }
     }
 }
 export default View3dController;

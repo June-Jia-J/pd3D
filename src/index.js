@@ -5,6 +5,18 @@ import View3dController from './containers/view3dController';
 import Edit3dController from './containers/edit3dController';
 import Show3dController from './containers/show3dController';
 import DetectView3dController from './containers/detectView3dController';
+import CameraManager from './modules/camera';
+import MaterialManager from './modules/material';
+import LightManager from './modules/light';
+import EnhancementPanel from './modules/enhancementPanel';
+import { 
+    CAMERA_CONFIG, 
+    VIEW_PRESETS, 
+    MATERIAL_CONFIG, 
+    LIGHT_CONFIG, 
+    PHASE_COLORS,
+    ENHANCEMENT_DEFAULTS,
+} from './constants';
 
 /* 加载一次设备模型（+传感器模型），完成模型可视化展示
 *   elementId：加载的dom元素
@@ -118,4 +130,14 @@ export {
     show3d,
     updateIsContinuousClick,
     updateEntityByPhase,
+    CameraManager,
+    MaterialManager,
+    LightManager,
+    EnhancementPanel,
+    CAMERA_CONFIG,
+    VIEW_PRESETS,
+    MATERIAL_CONFIG,
+    LIGHT_CONFIG,
+    PHASE_COLORS,
+    ENHANCEMENT_DEFAULTS,
 };
