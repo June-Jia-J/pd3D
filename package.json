@@ -16,6 +16,7 @@
   "dependencies": {
     "cesium": "1.89.0",
     "element-resize-event": "^3.0.3",
+    "readable-stream": "^4.7.0",
     "svg-sprite-loader": "^5.0.0"
   },
   "devDependencies": {

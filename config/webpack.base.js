@@ -47,6 +47,13 @@ const webpackConfigBase = {
         // Enable webpack-friendly use of require in Cesium
         toUrlUndefined: true
     },
+    node: {
+        fs: 'empty',
+        Buffer: false,
+        http: 'empty',
+        https: 'empty',
+        zlib: 'empty'
+    },
     plugins: [
         //创建一个HtmlWebpackPlugin插件实例
         new HtmlWebpackPlugin({
